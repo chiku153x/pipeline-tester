@@ -10,7 +10,8 @@ pipeline {
     stages {
         stage('Setup') {
             steps {
-                git branch: 'master', url: "${GIT_REPO}"
+                echo "Repo already checked out by multibranch pipeline"
+                sh 'git status'
             }
         }
 
@@ -51,7 +52,6 @@ pipeline {
         stage('Build Image') {
             steps {
                 script {
-                    // Use direct shell for DooD
                     sh "docker build -t ${DOCKER_IMAGE}:${BUILD_TAG} ."
                 }
             }
@@ -73,7 +73,7 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    // Optional: Push to registry or Artifactory
+                    // Optional: Tag and push to Docker registry
                     // sh "docker tag ${DOCKER_IMAGE}:${BUILD_TAG} your-registry/${DOCKER_IMAGE}:${BUILD_TAG}"
                     // sh "docker push your-registry/${DOCKER_IMAGE}:${BUILD_TAG}"
                     echo "Docker tag and push logic goes here"
