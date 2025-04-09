@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         GIT_REPO = 'https://github.com/chiku153x/pipeline-tester.git'
-        DOCKER_IMAGE = 'your-artifactory-domain.com/your-repo/pipeline-tester'
+        DOCKER_IMAGE="pipeline-tester"
         BUILD_TAG = "${BUILD_NUMBER}"
     }
 
@@ -18,8 +18,7 @@ pipeline {
         stage('Unittest') {
             steps {
                 sh 'pip install -r requirements.txt || true' // Optional, if you have a requirements.txt
-                sh 'pip install pytest'
-                sh 'pytest'
+                sh 'pytest -v --cov'
             }
         }
 
@@ -45,7 +44,7 @@ pipeline {
                         git config user.name "Jenkins"
                         git config user.email "jenkins@example.com"
                         git tag -a v${BUILD_TAG} -m "Build #${BUILD_TAG}"
-                        git push origin v${BUILD_TAG}
+                        #git push origin v${BUILD_TAG}
                     """
                 }
             }
@@ -54,10 +53,11 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    docker.withRegistry('https://your-artifactory-domain.com', 'artifactory-credentials-id') {
-                        dockerImage.push()
-                        dockerImage.push('latest')
-                    }
+                    //docker.withRegistry('https://your-artifactory-domain.com', 'artifactory-credentials-id') {
+                    //    dockerImage.push()
+                    //    dockerImage.push('latest')
+                    //}
+                    echo "Docker tag and push required"
                 }
             }
         }
