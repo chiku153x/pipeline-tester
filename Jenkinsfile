@@ -88,7 +88,7 @@ pipeline {
             echo '✅ Pipeline execution completed.'
         }
         failure {
-            echo '❌ Pipeline failed.'
+            echo '❌ Pipeline failed.e'
         }
     }
 }
