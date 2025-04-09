@@ -58,6 +58,7 @@ pipeline {
                     //    dockerImage.push('latest')
                     //}
                     echo "Docker tag and push required"
+                    echo "Test1"
                 }
             }
         }
