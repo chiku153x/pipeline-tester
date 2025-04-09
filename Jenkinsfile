@@ -22,7 +22,7 @@ pipeline {
                     python --version
                     pip install -U pip
                     pip --version
-                    pip install -r requirements.txt || true  # Optional, if you have a requirements.txt
+                    pip install -r requirements.txt || true
                     pip install coverage
                     coverage run -m pytest
                     coverage xml
@@ -32,7 +32,7 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('sonarqube') {  // Match Jenkins > Configure System
+                withSonarQubeEnv('sonarqube') {
                     script {
                         def scannerHome = tool 'sonar-scanner'
                         sh """
@@ -43,7 +43,6 @@ pipeline {
                                 -Dsonar.python.coverage.reportPaths=coverage.xml \
                                 -Dsonar.sourceEncoding=UTF-8
                         """
-                        
                     }
                 }
             }
@@ -52,7 +51,8 @@ pipeline {
         stage('Build Image') {
             steps {
                 script {
-                    dockerImage = docker.build("${DOCKER_IMAGE}:${BUILD_TAG}")
+                    // Use direct shell for DooD
+                    sh "docker build -t ${DOCKER_IMAGE}:${BUILD_TAG} ."
                 }
             }
         }
@@ -73,12 +73,10 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    // Uncomment and configure this for Artifactory push
-                    // docker.withRegistry('https://your-artifactory-domain.com', 'artifactory-credentials-id') {
-                    //     dockerImage.push()
-                    //     dockerImage.push('latest')
-                    // }
-                    echo "Docker tag and push required"
+                    // Optional: Push to registry or Artifactory
+                    // sh "docker tag ${DOCKER_IMAGE}:${BUILD_TAG} your-registry/${DOCKER_IMAGE}:${BUILD_TAG}"
+                    // sh "docker push your-registry/${DOCKER_IMAGE}:${BUILD_TAG}"
+                    echo "Docker tag and push logic goes here"
                 }
             }
         }
