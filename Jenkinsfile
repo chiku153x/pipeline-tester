@@ -1,25 +1,20 @@
 pipeline {
     agent any
 
-    tools {
-        sonarScanner 'SonarScanner'
-    }
-
     environment {
         GIT_REPO = 'https://github.com/chiku153x/pipeline-tester.git'
-        DOCKER_IMAGE="pipeline-tester"
+        DOCKER_IMAGE = "pipeline-tester"
         BUILD_TAG = "${BUILD_NUMBER}"
     }
 
     stages {
-
         stage('Setup') {
             steps {
                 git branch: 'master', url: "${GIT_REPO}"
             }
         }
 
-        stage('Unittest') {
+        stage('Unittest & Coverage') {
             steps {
                 sh '''
                     python3 -m venv .venv
@@ -27,30 +22,18 @@ pipeline {
                     python --version
                     pip install -U pip
                     pip --version
-                    pip install -r requirements.txt || true // Optional, if you have a requirements.txt
-                    pytest -v --cov
+                    pip install -r requirements.txt || true  # Optional, if you have a requirements.txt
+                    pip install coverage
+                    coverage run -m pytest
+                    coverage xml
                 '''
-            }
-        }
-
-        stage('Code Analysis') {
-            steps {
-                withSonarQubeEnv('sonarqube') { 
-                    sh '''
-                        . .venv/bin/activate
-                        pip install -r requirements.txt || true
-                        pip install coverage
-                        coverage run -m pytest
-                        coverage xml
-                    '''
-                }
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('sonarqube') {
-                sh 'sonar-scanner'
+                withSonarQubeEnv('SonarQube') {  // Match Jenkins > Configure System
+                    sh 'sonar-scanner'
                 }
             }
         }
@@ -70,7 +53,7 @@ pipeline {
                         git config user.name "Jenkins"
                         git config user.email "jenkins@example.com"
                         git tag -a v${BUILD_TAG} -m "Build #${BUILD_TAG}"
-                        #git push origin v${BUILD_TAG}
+                        # git push origin v${BUILD_TAG}
                     """
                 }
             }
@@ -79,12 +62,12 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    //docker.withRegistry('https://your-artifactory-domain.com', 'artifactory-credentials-id') {
-                    //    dockerImage.push()
-                    //    dockerImage.push('latest')
-                    //}
+                    // Uncomment and configure this for Artifactory push
+                    // docker.withRegistry('https://your-artifactory-domain.com', 'artifactory-credentials-id') {
+                    //     dockerImage.push()
+                    //     dockerImage.push('latest')
+                    // }
                     echo "Docker tag and push required"
-                    echo "Test1"
                 }
             }
         }
