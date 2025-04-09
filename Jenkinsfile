@@ -8,11 +8,11 @@ pipeline {
     }
 
     stages {
-
         stage('Setup') {
             steps {
-                echo "Repository already checked out by multibranch pipeline"
-                sh 'git status || true' // Avoid breaking build if status fails
+                cleanWs() // Cleans the workspace to avoid "not in a git directory" errors
+                checkout scm // Uses Multibranch Pipeline's default SCM configuration
+                sh 'git status'
             }
         }
 
@@ -23,8 +23,9 @@ pipeline {
                     . .venv/bin/activate
                     python --version
                     pip install -U pip
+                    pip --version
                     pip install -r requirements.txt || true
-                    pip install coverage pytest
+                    pip install coverage
                     coverage run -m pytest
                     coverage xml
                 '''
@@ -49,7 +50,7 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build Image') {
             steps {
                 script {
                     sh "docker build -t ${DOCKER_IMAGE}:${BUILD_TAG} ."
@@ -57,15 +58,15 @@ pipeline {
             }
         }
 
-        stage('Tag Git') {
+        stage('Tag & Push Git') {
             steps {
                 script {
-                    sh '''
+                    sh """
                         git config user.name "Jenkins"
                         git config user.email "jenkins@example.com"
-                        git tag -a v${BUILD_TAG} -m "Build #${BUILD_TAG}" || echo "Tag already exists"
+                        git tag -a v${BUILD_TAG} -m "Build #${BUILD_TAG}"
                         # git push origin v${BUILD_TAG}
-                    '''
+                    """
                 }
             }
         }
@@ -74,9 +75,9 @@ pipeline {
             steps {
                 script {
                     echo "Docker tag and push logic goes here"
-                    // Optional: Uncomment when ready to push
-                    // sh "docker tag ${DOCKER_IMAGE}:${BUILD_TAG} your-artifactory.com/${DOCKER_IMAGE}:${BUILD_TAG}"
-                    // sh "docker push your-artifactory.com/${DOCKER_IMAGE}:${BUILD_TAG}"
+                    // Example:
+                    // docker tag ${DOCKER_IMAGE}:${BUILD_TAG} your-registry/${DOCKER_IMAGE}:${BUILD_TAG}
+                    // docker push your-registry/${DOCKER_IMAGE}:${BUILD_TAG}
                 }
             }
         }
