@@ -35,7 +35,15 @@ pipeline {
                 withSonarQubeEnv('sonarqube') {  // Match Jenkins > Configure System
                     script {
                         def scannerHome = tool 'sonar-scanner'
-                        sh "${scannerHome}/bin/sonar-scanner"
+                        sh """
+                            ${scannerHome}/bin/sonar-scanner \
+                                -Dsonar.projectKey=pipeline-tester \
+                                -Dsonar.projectName='Pipeline Tester' \
+                                -Dsonar.sources=. \
+                                -Dsonar.python.coverage.reportPaths=coverage.xml \
+                                -Dsonar.sourceEncoding=UTF-8
+                        """
+                        
                     }
                 }
             }
