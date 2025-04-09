@@ -8,10 +8,11 @@ pipeline {
     }
 
     stages {
+
         stage('Setup') {
             steps {
-                echo "Repo already checked out by multibranch pipeline"
-                sh 'git status'
+                echo "Repository already checked out by multibranch pipeline"
+                sh 'git status || true' // Avoid breaking build if status fails
             }
         }
 
@@ -22,9 +23,8 @@ pipeline {
                     . .venv/bin/activate
                     python --version
                     pip install -U pip
-                    pip --version
                     pip install -r requirements.txt || true
-                    pip install coverage
+                    pip install coverage pytest
                     coverage run -m pytest
                     coverage xml
                 '''
@@ -49,7 +49,7 @@ pipeline {
             }
         }
 
-        stage('Build Image') {
+        stage('Build Docker Image') {
             steps {
                 script {
                     sh "docker build -t ${DOCKER_IMAGE}:${BUILD_TAG} ."
@@ -57,15 +57,15 @@ pipeline {
             }
         }
 
-        stage('Tag & Push Git') {
+        stage('Tag Git') {
             steps {
                 script {
-                    sh """
+                    sh '''
                         git config user.name "Jenkins"
                         git config user.email "jenkins@example.com"
-                        git tag -a v${BUILD_TAG} -m "Build #${BUILD_TAG}"
+                        git tag -a v${BUILD_TAG} -m "Build #${BUILD_TAG}" || echo "Tag already exists"
                         # git push origin v${BUILD_TAG}
-                    """
+                    '''
                 }
             }
         }
@@ -73,10 +73,10 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    // Optional: Tag and push to Docker registry
-                    // sh "docker tag ${DOCKER_IMAGE}:${BUILD_TAG} your-registry/${DOCKER_IMAGE}:${BUILD_TAG}"
-                    // sh "docker push your-registry/${DOCKER_IMAGE}:${BUILD_TAG}"
                     echo "Docker tag and push logic goes here"
+                    // Optional: Uncomment when ready to push
+                    // sh "docker tag ${DOCKER_IMAGE}:${BUILD_TAG} your-artifactory.com/${DOCKER_IMAGE}:${BUILD_TAG}"
+                    // sh "docker push your-artifactory.com/${DOCKER_IMAGE}:${BUILD_TAG}"
                 }
             }
         }
@@ -84,10 +84,10 @@ pipeline {
 
     post {
         always {
-            echo 'Pipeline execution completed.'
+            echo '✅ Pipeline execution completed.'
         }
         failure {
-            echo 'Pipeline failed.'
+            echo '❌ Pipeline failed.'
         }
     }
 }
