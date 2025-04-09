@@ -17,6 +17,9 @@ pipeline {
 
         stage('Unittest') {
             steps {
+                sh 'python3 -m venv .venv'
+                sh 'source .venv/bin/activate'
+
                 sh 'pip install -r requirements.txt || true' // Optional, if you have a requirements.txt
                 sh 'pytest -v --cov'
             }
