@@ -17,13 +17,15 @@ pipeline {
 
         stage('Unittest') {
             steps {
-                sh 'python3 -m venv .venv'
-                sh '. .venv/bin/activate'
-                sh 'python --version'
-                sh 'pip install -U pip'
-                sh 'pip --version'
-                sh 'pip install -r requirements.txt || true' // Optional, if you have a requirements.txt
-                sh 'pytest -v --cov'
+                sh '''
+                    python3 -m venv .venv
+                    . .venv/bin/activate
+                    python --version
+                    pip install -U pip
+                    pip --version
+                    pip install -r requirements.txt || true // Optional, if you have a requirements.txt
+                    pytest -v --cov
+                '''
             }
         }
 
