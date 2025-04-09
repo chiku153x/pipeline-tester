@@ -32,7 +32,7 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('SonarQube') {  // Match Jenkins > Configure System
+                withSonarQubeEnv('sonarqube') {  // Match Jenkins > Configure System
                     sh 'sonar-scanner'
                 }
             }
