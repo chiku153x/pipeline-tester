@@ -31,8 +31,16 @@ pipeline {
 
         stage('Code Analysis') {
             steps {
-                sh 'pip install flake8'
-                sh 'flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics'
+                withSonarQubeEnv('sonarqube') { 
+                    sh '''
+                        . .venv/bin/activate
+                        pip install -r requirements.txt || true
+                        pip install coverage
+                        coverage run -m pytest
+                        coverage xml
+                        sonar-scanner
+                    '''
+                }
             }
         }
 
