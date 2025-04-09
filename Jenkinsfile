@@ -10,8 +10,8 @@ pipeline {
     stages {
         stage('Setup') {
             steps {
-                cleanWs() // Cleans the workspace to avoid "not in a git directory" errors
-                checkout scm // Uses Multibranch Pipeline's default SCM configuration
+                cleanWs() // Avoid "not in a git directory" errors
+                checkout scm // Multibranch pipelines auto-handle Git
                 sh 'git status'
             }
         }
@@ -23,7 +23,6 @@ pipeline {
                     . .venv/bin/activate
                     python --version
                     pip install -U pip
-                    pip --version
                     pip install -r requirements.txt || true
                     pip install coverage
                     coverage run -m pytest
@@ -75,7 +74,6 @@ pipeline {
             steps {
                 script {
                     echo "Docker tag and push logic goes here"
-                    // Example:
                     // docker tag ${DOCKER_IMAGE}:${BUILD_TAG} your-registry/${DOCKER_IMAGE}:${BUILD_TAG}
                     // docker push your-registry/${DOCKER_IMAGE}:${BUILD_TAG}
                 }
@@ -88,7 +86,7 @@ pipeline {
             echo '✅ Pipeline execution completed.'
         }
         failure {
-            echo '❌ Pipeline failed.e'
+            echo '❌ Pipeline failed.'
         }
     }
 }
