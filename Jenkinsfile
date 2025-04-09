@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    tools {
+        sonarScanner 'SonarScanner'
+    }
+
     environment {
         GIT_REPO = 'https://github.com/chiku153x/pipeline-tester.git'
         DOCKER_IMAGE="pipeline-tester"
@@ -38,8 +42,15 @@ pipeline {
                         pip install coverage
                         coverage run -m pytest
                         coverage xml
-                        sonar-scanner
                     '''
+                }
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                sh 'sonar-scanner'
                 }
             }
         }
